@@ -1,5 +1,6 @@
 package clubdeportivo;
 
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,11 +50,22 @@ public class GrupoTest {
 
     @ParameterizedTest
     @DisplayName("actualizarPlazas with invalid data")
-    @ValueSource(ints = {0, -5, -10})
+    @ValueSource(ints = {0, -5})
     public void ActualizarPlazas_WithInvalidData_ReturnsException(int n) {
         try {
             Grupo grupo = new Grupo("123A", "Kizomba", 10, 10, 25.0);
             grupo.actualizarPlazas(n);
+        } catch (ClubException e) {
+            assertEquals("ERROR: número de plazas negativo.", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("actualizarPlazas with invalid data, n<matriculados")
+    public void ActualizarPlazas_WithInsufficientPlazas_ThrowsException() {
+        try {
+            Grupo grupo = new Grupo("123A", "Kizomba", 10, 10, 25.0);
+            grupo.actualizarPlazas(5);
         } catch (ClubException e) {
             assertEquals("ERROR: número de plazas negativo.", e.getMessage());
         }
@@ -100,6 +112,7 @@ public class GrupoTest {
         Grupo grupo1 = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         Grupo grupo2 = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         assertEquals(true, grupo1.equals(grupo2));
+        assertTrue(grupo1.getActividad().equalsIgnoreCase(grupo2.getActividad())&&grupo1.getCodigo().equalsIgnoreCase(grupo2.getCodigo()));
     }
 
     @Test
@@ -115,6 +128,26 @@ public class GrupoTest {
     public void HashCode_ReturnsSuccess() throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         assertEquals("123A".toUpperCase().hashCode()+"Kizomba".toUpperCase().hashCode(), grupo.hashCode());
+    }
+
+    @ParameterizedTest
+    @DisplayName("Constructor with invalid data, nplazas<matriculas")
+    @CsvSource({"123A,Kizomba,10,15,25.0",
+            "456B,Pilates,8,10,50.0",
+            "789C,Spinning,15,20,30.0"})
+    public void Create_Grupo_WithInsufficientPlazas_ReturnsException2(String codigo, String actividad, int nplazas, int matriculados, double tarifa) {
+        try {
+            Grupo grupo = new Grupo(codigo, actividad, nplazas, matriculados, tarifa);
+        } catch (ClubException e) {
+            assertEquals("ERROR: El número de plazas es menor que el de matriculados.", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("equals when object is not instance of Grupo")
+    public void Equals_WhenObjectIsNotInstanceOfGrupo_ReturnsFalse() throws ClubException {
+        Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
+        assertNotEquals(grupo, new Object());
     }
 
 
