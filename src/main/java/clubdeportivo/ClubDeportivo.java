@@ -35,6 +35,8 @@ public class ClubDeportivo {
 	}
 
 	public void anyadirActividad(String[] datos) throws ClubException {
+		// ERROR: EL ARRAY DE DATOS NO SE COMPRUEBA QUE TENGA 5 ELEMENTOS, DANDO LUGAR A ARRAYINDEXOUTOFBOUNDS
+
 		try {
 			int plazas = Integer.parseInt(datos[2]);
 			int matriculados = Integer.parseInt(datos[3]);
@@ -44,6 +46,11 @@ public class ClubDeportivo {
 		} catch (NumberFormatException e) {
 			throw new ClubException("ERROR: formato de número incorrecto");
 		}
+		// FIX
+		catch (ArrayIndexOutOfBoundsException e) {
+			throw new ClubException("ERROR: array de longitud incorrecta");
+		}
+		//END FIX
 	}
 
 	public void anyadirActividad(Grupo g) throws ClubException {

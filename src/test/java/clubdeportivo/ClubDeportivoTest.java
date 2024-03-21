@@ -115,4 +115,11 @@ public class ClubDeportivoTest {
         assertEquals("Club --> [ " + grupo1.toString() + ", " + grupo2.toString() + " ]", club.toString());
     }
 
+    @Test
+    @DisplayName("AnyadirActividad with datos[].length<5")
+    public void AnyadirActividad_WithInvalidData2_ThrowsClubException() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        String[] datos = {"1", "Actividad", "10"};
+        assertThrows(ClubException.class, () -> club.anyadirActividad(datos));
+    }
 }
