@@ -1,3 +1,5 @@
+//Autores: Cristian Ruiz Martín y Mikolaj Zabski
+
 package clubdeportivo;
 
 import java.util.StringJoiner;

@@ -1,3 +1,5 @@
+//Autores: Cristian Ruiz Martín y Mikolaj Zabski
+
 import clubdeportivo.ClubDeportivo;
 import clubdeportivo.ClubException;
 import clubdeportivo.Grupo;
