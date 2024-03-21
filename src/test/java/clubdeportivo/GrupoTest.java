@@ -14,10 +14,10 @@ public class GrupoTest {
     //parametrized test for constructor
     @ParameterizedTest
     @DisplayName("Create Grupo with valid data")
-    @CsvSource({"123A,Kizomba,10,0,25.0",
+    @CsvSource({"123A,Kizomba,10,1,25.0",
             "456B,Pilates,8,5,50.0",
             "789C,Spinning,15,10,30.0"})
-    public void Create_Grupo_WithValidData_ReturnsSuccess(String codigo, String actividad, int nplazas, int matriculados, double tarifa) throws ClubException {
+    public void CreateGrupo_WithValidData_ReturnsSuccess(String codigo, String actividad, int nplazas, int matriculados, double tarifa) throws ClubException {
         Grupo grupo = new Grupo(codigo, actividad, nplazas, matriculados, tarifa);
         assertEquals(codigo, grupo.getCodigo());
         assertEquals(actividad, grupo.getActividad());
@@ -31,16 +31,21 @@ public class GrupoTest {
     @CsvSource({"123A,Kizomba,0,10,25.0",
             "456B,Pilates,8,-5,50.0",
             "789C,Spinning,15,10,-30.0"})
-    public void Create_Grupo_WithInvalidData_ReturnsException(String codigo, String actividad, int nplazas, int matriculados, double tarifa) {
-        try {
-            Grupo grupo = new Grupo(codigo, actividad, nplazas, matriculados, tarifa);
-        } catch (ClubException e) {
-            assertEquals("ERROR: los datos numéricos no pueden ser menores o iguales que 0.", e.getMessage());
-        }
+    public void CreateGrupo_WithInvalidData_ReturnsException(String codigo, String actividad, int nplazas, int matriculados, double tarifa) throws ClubException{
+        assertThrows(ClubException.class, () -> new Grupo(codigo, actividad, nplazas, matriculados, tarifa));
     }
 
     @ParameterizedTest
-    @DisplayName("actualizarPlazas with valid data")
+    @DisplayName("Constructor with invalid data, nplazas<matriculas")
+    @CsvSource({"123A,Kizomba,10,15,25.0",
+            "456B,Pilates,8,10,50.0",
+            "789C,Spinning,15,20,30.0"})
+    public void CreateGrupo_WithInsufficientPlazas_ReturnsException(String codigo, String actividad, int nplazas, int matriculados, double tarifa) throws ClubException{
+        assertThrows(ClubException.class, () -> new Grupo(codigo, actividad, nplazas, matriculados, tarifa));
+    }
+
+    @ParameterizedTest
+    @DisplayName("ActualizarPlazas with valid data")
     @ValueSource(ints = {10, 15, 20})
     public void ActualizarPlazas_WithValidData_ReturnsSuccess(int n) throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 10, 25.0);
@@ -49,7 +54,7 @@ public class GrupoTest {
     }
 
     @ParameterizedTest
-    @DisplayName("actualizarPlazas with invalid data")
+    @DisplayName("ActualizarPlazas with invalid data")
     @ValueSource(ints = {0, -5})
     public void ActualizarPlazas_WithInvalidData_ReturnsException(int n) {
         try {
@@ -61,25 +66,21 @@ public class GrupoTest {
     }
 
     @Test
-    @DisplayName("actualizarPlazas with invalid data, n<matriculados")
-    public void ActualizarPlazas_WithInsufficientPlazas_ThrowsException() {
-        try {
+    @DisplayName("ActualizarPlazas with invalid data, n<matriculados")
+    public void ActualizarPlazas_WithInsufficientPlazas_ThrowsException() throws ClubException{
             Grupo grupo = new Grupo("123A", "Kizomba", 10, 10, 25.0);
-            grupo.actualizarPlazas(5);
-        } catch (ClubException e) {
-            assertEquals("ERROR: número de plazas negativo.", e.getMessage());
-        }
+            assertThrows(ClubException.class, () -> grupo.actualizarPlazas(5));
     }
 
     @Test
-    @DisplayName("plazasLibres test")
+    @DisplayName("PlazasLibres test")
     public void PlazasLibres_ReturnsSuccess() throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         assertEquals(5, grupo.plazasLibres());
     }
 
     @ParameterizedTest
-    @DisplayName("matricular with valid data")
+    @DisplayName("Matricular with valid data")
     @ValueSource(ints = {5, 3, 1})
     public void Matricular_WithValidData_ReturnsSuccess(int n) throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
@@ -88,69 +89,51 @@ public class GrupoTest {
     }
 
     @ParameterizedTest
-    @DisplayName("matricular with invalid data")
-    @ValueSource(ints = {0, -5, -10})
-    public void Matricular_WithInvalidData_ReturnsException(int n) {
-        try {
+    @DisplayName("Matricular with invalid data")
+    @ValueSource(ints = {500, 0, -5, -10})
+    public void Matricular_WithInvalidData_ReturnsException(int n) throws ClubException{
             Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
-            grupo.matricular(n);
-        } catch (ClubException e) {
-            assertEquals("ERROR: no hay plazas libres suficientes, plazas libre: 5 y matriculas: " + n, e.getMessage());
-        }
+            assertThrows(ClubException.class, () -> grupo.matricular(n));
     }
 
     @Test
-    @DisplayName("toString test")
-    public void toString_ReturnsSuccess() throws ClubException {
+    @DisplayName("ToString test")
+    public void ToString_ReturnsSuccess() throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         assertEquals("(123A - Kizomba - 25.0 euros - P:10 - M:5)", grupo.toString());
     }
 
     @Test
-    @DisplayName("equals test")
-    public void Equals_WhenSame_ReturnsSuccess() throws ClubException {
+    @DisplayName("Equals test")
+    public void Equals_WhenSame_ReturnsTrue() throws ClubException {
         Grupo grupo1 = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         Grupo grupo2 = new Grupo("123A", "Kizomba", 10, 5, 25.0);
-        assertEquals(true, grupo1.equals(grupo2));
+        assertEquals(grupo1, grupo2);
         assertTrue(grupo1.getActividad().equalsIgnoreCase(grupo2.getActividad())&&grupo1.getCodigo().equalsIgnoreCase(grupo2.getCodigo()));
     }
 
     @Test
-    @DisplayName("equals test returns false")
+    @DisplayName("Equals test returns false")
     public void Equals_WhenDifferent_ReturnsFalse() throws ClubException {
         Grupo grupo1 = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         Grupo grupo2 = new Grupo("456B", "Pilates", 8, 5, 50.0);
+        Grupo grupo3 = new Grupo("123A", "Pilates", 15, 10, 30.0);
         assertNotEquals(grupo1, grupo2);
+        assertNotEquals(grupo1, grupo3);
+        assertNotEquals(grupo2, grupo3);
     }
 
     @Test
-    @DisplayName("hashCode test")
-    public void HashCode_ReturnsSuccess() throws ClubException {
-        Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
-        assertEquals("123A".toUpperCase().hashCode()+"Kizomba".toUpperCase().hashCode(), grupo.hashCode());
-    }
-
-    @ParameterizedTest
-    @DisplayName("Constructor with invalid data, nplazas<matriculas")
-    @CsvSource({"123A,Kizomba,10,15,25.0",
-            "456B,Pilates,8,10,50.0",
-            "789C,Spinning,15,20,30.0"})
-    public void Create_Grupo_WithInsufficientPlazas_ReturnsException2(String codigo, String actividad, int nplazas, int matriculados, double tarifa) {
-        try {
-            Grupo grupo = new Grupo(codigo, actividad, nplazas, matriculados, tarifa);
-        } catch (ClubException e) {
-            assertEquals("ERROR: El número de plazas es menor que el de matriculados.", e.getMessage());
-        }
-    }
-
-    @Test
-    @DisplayName("equals when object is not instance of Grupo")
+    @DisplayName("Equals when object is not instance of Grupo")
     public void Equals_WhenObjectIsNotInstanceOfGrupo_ReturnsFalse() throws ClubException {
         Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
         assertNotEquals(grupo, new Object());
     }
 
-
-
-
+    @Test
+    @DisplayName("HashCode test")
+    public void HashCode_ReturnsSuccess() throws ClubException {
+        Grupo grupo = new Grupo("123A", "Kizomba", 10, 5, 25.0);
+        assertEquals("123A".toUpperCase().hashCode()+"Kizomba".toUpperCase().hashCode(), grupo.hashCode());
+    }
 }

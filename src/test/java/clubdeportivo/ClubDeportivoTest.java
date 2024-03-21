@@ -36,4 +36,81 @@ public class ClubDeportivoTest {
         String[] datos = {codigo, actividad, plazas, matriculados, tarifa};
         assertThrows(ClubException.class, () -> club.anyadirActividad(datos));
     }
+
+    @Test
+    @DisplayName("AnyadirActividad with null group")
+    public void AnyadirActividadWithNullGroup_ThrowsClubException() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        assertThrows(ClubException.class, () -> club.anyadirActividad((Grupo) null));
+    }
+
+    @Test
+    @DisplayName("AnyadirActividad with repeated group")
+    public void AnyadirActividadWithRepeatedGroup_UpdatesPlazas() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        Grupo grupo = new Grupo("1", "Actividad", 10, 5, 10.0);
+        club.anyadirActividad(grupo);
+        Grupo grupo2 = new Grupo("1", "Actividad", 20, 5, 10.0);
+        club.anyadirActividad(grupo2);
+        assertEquals(15, club.plazasLibres("Actividad"));
+
+    }
+
+    @Test
+    @DisplayName("Matricular with valid data")
+    public void MatricularWithValidData_ReturnsSuccess() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        Grupo grupo = new Grupo("1", "Actividad", 10, 5, 10.0);
+        Grupo grupo2 = new Grupo("2", "Actividad2", 12, 8, 10.0);
+        club.anyadirActividad(grupo);
+        club.anyadirActividad(grupo2);
+        assertDoesNotThrow(() -> club.matricular("Actividad", 5));
+        assertDoesNotThrow(() -> club.matricular("Actividad2", 3));
+    }
+
+    @Test
+    @DisplayName("Matricular with invalid data, plazas < matriculados")
+    public void MatricularWithInvalidData_ThrowsClubException() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        Grupo grupo = new Grupo("1", "Actividad", 10, 5, 10.0);
+        club.anyadirActividad(grupo);
+        assertThrows(ClubException.class, () -> club.matricular("Actividad", 10));
+    }
+
+    @Test
+    @DisplayName("Ingresos with no groups")
+    public void IngresosWithNoGroups_ReturnsZero() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        assertEquals(0.0, club.ingresos());
+    }
+
+    @Test
+    @DisplayName("Ingresos with one or more groups")
+    public void IngresosWithOneOrMoreGroups_ReturnsSuccess() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        Grupo grupo1 = new Grupo("1", "Actividad", 10, 5, 10.0);
+        Grupo grupo2 = new Grupo("2", "Actividad", 10, 5, 10.0);
+        club.anyadirActividad(grupo1);
+        club.anyadirActividad(grupo2);
+        assertEquals(100.0, club.ingresos());
+    }
+
+    @Test
+    @DisplayName("ToString with no groups")
+    public void ToStringWithNoGroups_ReturnsNameString() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        assertEquals("Club --> [  ]", club.toString());
+    }
+
+    @Test
+    @DisplayName("ToString with one or more groups")
+    public void ToStringWithOneOrMoreGroups_ReturnsSuccess() throws ClubException {
+        ClubDeportivo club = new ClubDeportivo("Club");
+        Grupo grupo1 = new Grupo("1", "Actividad", 10, 5, 10.0);
+        Grupo grupo2 = new Grupo("2", "Actividad", 10, 5, 10.0);
+        club.anyadirActividad(grupo1);
+        club.anyadirActividad(grupo2);
+        assertEquals("Club --> [ " + grupo1.toString() + ", " + grupo2.toString() + " ]", club.toString());
+    }
+
 }
